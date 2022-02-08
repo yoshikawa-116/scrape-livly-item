@@ -40,30 +40,38 @@ function App() {
     const titleRect = {x: 77, y: 934, w: 596, h: 48}
     const attrRect = {x: 203, y: 859, w: 200, h: 50}
     const descRect = {x: 77, y: 1048, w: 596, h: 40}
+    const rareRect = {x: 75, y: 854, w: 62, h: 60}
     const descImage3 = ctx.getImageData(descRect.x, descRect.y - 35 * 2, descRect.w, descRect.h)
     const value3 = getAvgValue(descImage3, descRect.w, descRect.h)
     const descImage2 = ctx.getImageData(descRect.x, descRect.y - 35, descRect.w, descRect.h)
     const value2 = getAvgValue(descImage2, descRect.w, descRect.h)
     if (value3 < 235) {
-      return [
-        {x: titleRect.x, y: titleRect.y - 35 * 2, w: titleRect.w, h: titleRect.h, file},
-        {x: attrRect.x, y: attrRect.y - 35 * 2, w: attrRect.w, h: attrRect.h, file},
-        {x: descRect.x, y: descRect.y - 35 * 2, w: descRect.w, h: descRect.h + 35 * 2, file}
-      ]
+      titleRect.y -= 35 * 2
+      attrRect.y -= 35 * 2
+      descRect.y -= 35 * 2
+      descRect.h += 35 * 2
+      rareRect.y -= 35 * 2
     } else if (value2 < 235) {
-      return [
-        {x: titleRect.x, y: titleRect.y - 35, w: titleRect.w, h: titleRect.h, file},
-        {x: attrRect.x, y: attrRect.y - 35, w: attrRect.w, h: attrRect.h, file},
-        {x: descRect.x, y: descRect.y - 35, w: descRect.w, h: descRect.h + 35, file}
-      ]
-    } else {
-      return [
-        {x: titleRect.x, y: titleRect.y, w: titleRect.w, h: titleRect.h , file},
-        {x: attrRect.x, y: attrRect.y, w: attrRect.w, h: attrRect.h, file},
-        {x: descRect.x, y: descRect.y, w: descRect.w, h: descRect.h, file}
-      ]
+      titleRect.y -= 35
+      attrRect.y -= 35
+      descRect.y -= 35
+      descRect.h += 35
+      rareRect.y -= 35
     }
+    const rareImage = ctx.getImageData(rareRect.x, rareRect.y, rareRect.w, rareRect.h)
+    const valueRare = getAvgValue(rareImage, rareRect.w, rareRect.h)
+    console.log(valueRare)
+    if (valueRare > 220) {
+      attrRect.x -= 63
+      attrRect.w += 50
+    }
+    return [
+      {x: titleRect.x, y: titleRect.y, w: titleRect.w, h: titleRect.h , file},
+      {x: attrRect.x, y: attrRect.y, w: attrRect.w, h: attrRect.h, file},
+      {x: descRect.x, y: descRect.y, w: descRect.w, h: descRect.h, file}
+    ]
   }, [getAvgValue])
+
   const DrawImage = React.useCallback((file: File, rect: Array<Rect>) => {
     if (file) {
       const img = new Image()
@@ -85,6 +93,7 @@ function App() {
       img.src = URL.createObjectURL(file)
     }
   }, [cvs])
+ 
   const ExecuteOcr = React.useCallback(async() => {
     setRects(() => [])
     let resultAry: Array<Result> = []
@@ -106,6 +115,7 @@ function App() {
     }
     setResults(() => resultAry)
   }, [rects, setRects, setResults, cropImage, recognize, DrawImage])
+
   const ExecuteScrapeImage = React.useCallback((file: File) => {
     if (file) {
       const img = new Image()
