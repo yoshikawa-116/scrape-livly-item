@@ -1,5 +1,6 @@
 import React from 'react'
 import './App.scss'
+import ReactLoading from 'react-loading'
 import Header from './components/Header'
 import DropZone from './components/DropZone'
 import useCrop from './hooks/useCrop'
@@ -23,6 +24,7 @@ function App() {
   const [files, setFiles] = React.useState<Array<File>>([])
   const [rects, setRects] = React.useState<Array<Array<Rect>>>([])
   const [results, setResults] = React.useState<Array<Result>>([])
+  const [loading, setLoading] = React.useState<boolean>(false)
   const cvs = React.useRef(null)
   const cropImage = useCrop()
   const recognize = useOcr()
@@ -60,7 +62,6 @@ function App() {
     }
     const rareImage = ctx.getImageData(rareRect.x, rareRect.y, rareRect.w, rareRect.h)
     const valueRare = getAvgValue(rareImage, rareRect.w, rareRect.h)
-    console.log(valueRare)
     if (valueRare > 220) {
       attrRect.x -= 63
       attrRect.w += 50
@@ -95,6 +96,7 @@ function App() {
   }, [cvs])
  
   const ExecuteOcr = React.useCallback(async() => {
+    setLoading(() => true)
     setRects(() => [])
     let resultAry: Array<Result> = []
     for (let i = 0; i < rects.length; i++) {
@@ -105,16 +107,20 @@ function App() {
           .then((img: HTMLImageElement) => recognize(img))
           // eslint-disable-next-line
           .then((text: string) => {
-            console.log(text)
-            if (j === 0) result.title = text
+            if (j === 0) {
+              if (text.slice(-1) === '目') text = text.slice(0, -1)
+              result.title = text
+            }
             if (j === 1) result.attribute = text
             if (j === 2) result.description = text;
+            console.log(text)
           })
       }
       resultAry.push(result)
     }
     setResults(() => resultAry)
-  }, [rects, setRects, setResults, cropImage, recognize, DrawImage])
+    setLoading(() => false)
+  }, [rects, setRects, setResults, setLoading, cropImage, recognize, DrawImage])
 
   const ExecuteScrapeImage = React.useCallback((file: File) => {
     if (file) {
@@ -150,8 +156,14 @@ function App() {
   }, [check, ExecuteOcr])
 
   const onDrop = React.useCallback((acceptedFiles: Array<File>) => {
-    setFiles(() => acceptedFiles)
-  }, [setFiles])
+    if (loading) {
+      window.alert('処理中です。処理が終了するまでお待ちください。')
+    } else {
+      setFiles(() => acceptedFiles)
+      setRects(() => [])
+      setResults(() => [])
+    }
+  }, [setFiles, setRects, setResults, loading])
 
   return (
     <div className="App">
@@ -164,11 +176,13 @@ function App() {
           </div>
           <div className="output">
             {
-              results.map((result, index) => (
-                <div key={index} className="result_line">
-                  {result.title},{result.attribute},{result.description}
-                </div>
-              ))
+              loading ? 
+                <ReactLoading className="loading" type="spinningBubbles" color="#aaf" /> :
+                results.map((result, index) => (
+                  <div key={index} className="result_line">
+                    {result.title},{result.attribute},{result.description}
+                  </div>
+                ))
             }
           </div>
         </div>
