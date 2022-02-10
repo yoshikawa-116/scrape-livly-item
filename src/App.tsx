@@ -38,6 +38,7 @@ function App() {
     }
     return sum / (w * h)
   }, [])
+  
   const getRects = React.useCallback((ctx: CanvasRenderingContext2D, file: File) => {
     const titleRect = {x: 77, y: 934, w: 596, h: 48}
     const attrRect = {x: 203, y: 859, w: 200, h: 50}
@@ -159,6 +160,7 @@ function App() {
     if (loading) {
       window.alert('処理中です。処理が終了するまでお待ちください。')
     } else {
+      acceptedFiles.sort()
       setFiles(() => acceptedFiles)
       setRects(() => [])
       setResults(() => [])
