@@ -1,6 +1,10 @@
 import React from 'react'
 import './App.scss'
 import ReactLoading from 'react-loading'
+import FormControl from '@mui/material/FormControl'
+import RadioGroup from '@mui/material/RadioGroup'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Radio from '@mui/material/Radio'
 import Header from './components/Header'
 import DropZone from './components/DropZone'
 import useCrop from './hooks/useCrop'
@@ -25,6 +29,7 @@ function App() {
   const [rects, setRects] = React.useState<Array<Array<Rect>>>([])
   const [results, setResults] = React.useState<Array<Result>>([])
   const [loading, setLoading] = React.useState<boolean>(false)
+  const [yami, setYami] = React.useState<boolean>(false)
   const cvs = React.useRef(null)
   const cropImage = useCrop()
   const recognize = useOcr()
@@ -44,6 +49,12 @@ function App() {
     const attrRect = {x: 203, y: 859, w: 200, h: 50}
     const descRect = {x: 77, y: 1048, w: 596, h: 40}
     const rareRect = {x: 75, y: 854, w: 62, h: 60}
+    if (yami) {
+      titleRect.y -= 58
+      attrRect.y -= 58
+      descRect.y -= 58
+      rareRect.y -= 58
+    }
     const descImage3 = ctx.getImageData(descRect.x, descRect.y - 35 * 2, descRect.w, descRect.h)
     const value3 = getAvgValue(descImage3, descRect.w, descRect.h)
     const descImage2 = ctx.getImageData(descRect.x, descRect.y - 35, descRect.w, descRect.h)
@@ -72,7 +83,7 @@ function App() {
       {x: attrRect.x, y: attrRect.y, w: attrRect.w, h: attrRect.h, file},
       {x: descRect.x, y: descRect.y, w: descRect.w, h: descRect.h, file}
     ]
-  }, [getAvgValue])
+  }, [yami, getAvgValue])
 
   const DrawImage = React.useCallback((file: File, rect: Array<Rect>) => {
     if (file) {
@@ -166,12 +177,26 @@ function App() {
       setResults(() => [])
     }
   }, [setFiles, setRects, setResults, loading])
+  const onChangeRadio = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFiles(() => [])
+    setRects(() => [])
+    setResults(() => [])
+    setYami(() => (e.target as HTMLInputElement).value === 'true')
+  }, [setFiles, setRects, setResults, setYami])
 
   return (
     <div className="App">
       <Header />
       <main>
         <DropZone onDrop={onDrop} />
+        <div className="item-type">
+          <FormControl>
+            <RadioGroup row value={yami} onChange={onChangeRadio}>
+              <FormControlLabel value={false} control={<Radio />} label="通常アイテム" />
+              <FormControlLabel value={true} control={<Radio />} label="ヤミショップアイテム" />
+            </RadioGroup>
+          </FormControl>
+        </div>
         <div className="container">
           <div>
             <canvas className="canvas" ref={cvs} />
