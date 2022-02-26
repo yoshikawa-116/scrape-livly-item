@@ -49,28 +49,26 @@ function App() {
     const attrRect = {x: 203, y: 859, w: 200, h: 50}
     const descRect = {x: 77, y: 1048, w: 596, h: 40}
     const rareRect = {x: 75, y: 854, w: 62, h: 60}
+    const checkRect = {x:0, y: 350, w: 750, h: 40}
     if (yami) {
       titleRect.y -= 58
       attrRect.y -= 58
       descRect.y -= 58
       rareRect.y -= 58
+      checkRect.y -= 58
     }
-    const descImage3 = ctx.getImageData(descRect.x, descRect.y - 35 * 2, descRect.w, descRect.h)
-    const value3 = getAvgValue(descImage3, descRect.w, descRect.h)
-    const descImage2 = ctx.getImageData(descRect.x, descRect.y - 35, descRect.w, descRect.h)
-    const value2 = getAvgValue(descImage2, descRect.w, descRect.h)
-    if (value3 < 235) {
-      titleRect.y -= 35 * 2
-      attrRect.y -= 35 * 2
-      descRect.y -= 35 * 2
-      descRect.h += 35 * 2
-      rareRect.y -= 35 * 2
-    } else if (value2 < 235) {
-      titleRect.y -= 35
-      attrRect.y -= 35
-      descRect.y -= 35
-      descRect.h += 35
-      rareRect.y -= 35
+    for (let i = 0; i < 3; i++)
+    {
+      const checkImage = ctx.getImageData(checkRect.x, checkRect.y - 40 * i, checkRect.w, checkRect.h)
+      const valueCheck = getAvgValue(checkImage, checkRect.w, checkRect.h)
+      if (valueCheck < 130) break
+      else {
+        titleRect.y -= 35
+        attrRect.y -= 35
+        descRect.y -= 35
+        descRect.h += 35
+        rareRect.y -= 35
+      }
     }
     const rareImage = ctx.getImageData(rareRect.x, rareRect.y, rareRect.w, rareRect.h)
     const valueRare = getAvgValue(rareImage, rareRect.w, rareRect.h)
